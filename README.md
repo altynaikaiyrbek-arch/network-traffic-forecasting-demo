@@ -28,7 +28,7 @@ python scripts/download_data.py
 streamlit run app.py
 ```
 
-`download_data.py` fetches about 45 MB from the public Abilene release at https://www.cs.utexas.edu/~yzhang/research/AbileneTM/ into `data/raw/`. The raw files are not stored in this repository. The app opens at http://localhost:8501.
+`download_data.py` fetches about 45 MB from the public Abilene release at https://www.cs.utexas.edu/~yzhang/research/AbileneTM/ into `data/raw/`. The raw files are not stored in this repository. The app opens at http://localhost:8501. On the first start Streamlit may ask for an email address; press Enter to skip it. The first load takes about a minute while the forecaster is trained.
 
 Run the tests with `pytest`.
 
