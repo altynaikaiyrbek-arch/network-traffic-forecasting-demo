@@ -12,6 +12,8 @@ from trafficdemo.injection import EVENT_TYPES
 from trafficdemo.pipeline import DETECTORS, FORECASTERS, DetectorSettings, Pipeline
 
 RAW_DIR = "data/raw"
+TOTAL = "All routers (network total)"
+DEFAULT_NODE = "WASHng"  # the busiest router, with a clear daily and weekly cycle
 
 st.set_page_config(page_title="Traffic forecasting demo", layout="wide")
 st.title("Network traffic forecasting and early anomaly warning")
@@ -24,7 +26,7 @@ st.caption(
 
 @st.cache_resource(show_spinner="Loading data and training the forecaster...")
 def get_pipeline(node, freq, forecaster):
-    series = load_abilene(RAW_DIR, node=None if node == "All routers (network total)" else node, freq=freq)
+    series = load_abilene(RAW_DIR, node=None if node == TOTAL else node, freq=freq)
     return Pipeline(series, freq, forecaster)
 
 
@@ -36,8 +38,10 @@ except FileNotFoundError:
 
 with st.sidebar:
     st.header("Data and forecaster")
-    node = st.selectbox("Series", ["All routers (network total)"] + nodes,
-                        help="Sum of the origin-destination demands that start at the chosen router.")
+    options = nodes + [TOTAL]
+    node = st.selectbox("Series", options, index=options.index(DEFAULT_NODE) if DEFAULT_NODE in options else 0,
+                        help="Sum of the origin-destination demands that start at the chosen router (node total). "
+                             "The network total adds all 144 demands.")
     freq = st.selectbox("Resolution", ["1h", "15min", "5min"], index=0)
     forecaster = st.selectbox("Forecaster", FORECASTERS, index=1)
 
@@ -54,7 +58,8 @@ with st.sidebar:
     )
     duration_hours = st.select_slider(
         "Duration (hours)", options=[h for h in [0.25, 0.5, 1, 2, 6, 12, 24, 48] if h >= hours], value=6 if hours <= 6 else hours,
-        disabled=(kind == "level shift"),
+        disabled=(kind == "spike"),
+        help="A spike always lasts two intervals. A level shift, a ramp and an outage last as long as chosen here.",
     )
     test_index = pipe.series.index[pipe.test]
     first_start = test_index[0] + pd.Timedelta("1D")

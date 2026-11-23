@@ -46,14 +46,13 @@ def test_merge_alarms_counts_long_event_once():
     assert merge_alarms(mask, refractory=3) == [10, 30]
 
 
-@pytest.mark.parametrize("kind,expected_end", [("spike", 13), ("ramp", 13), ("outage", 13), ("level shift", 100)])
+@pytest.mark.parametrize("kind,expected_end", [("spike", 12), ("ramp", 13), ("outage", 13), ("level shift", 13)])
 def test_injection_window(kind, expected_end):
     s = pd.Series(np.ones(100), index=pd.date_range("2004-01-01", periods=100, freq="1h"))
     out, (a, b) = inject(s, kind, start=10, amplitude=0.5, duration=3)
     assert (a, b) == (10, expected_end)
     assert (out.iloc[:10] == 1).all()
-    if kind != "level shift":
-        assert (out.iloc[b:] == 1).all()
+    assert (out.iloc[b:] == 1).all()
     assert (out.iloc[a:b] != 1).all()
 
 
@@ -81,4 +80,11 @@ def test_batch_is_repeatable():
     a = pipe.batch("level shift", 0.5, 6, runs=5)
     b = pipe.batch("level shift", 0.5, 6, runs=5)
     assert a == b
+
+
+
+def test_spike_always_lasts_two_steps():
+    s = pd.Series(np.ones(50), index=pd.date_range('2004-01-01', periods=50, freq='1h'))
+    _, window = inject(s, 'spike', start=5, amplitude=0.5, duration=24)
+    assert window == (5, 7)
 

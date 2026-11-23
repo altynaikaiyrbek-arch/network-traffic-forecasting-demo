@@ -11,7 +11,7 @@ The demo loads one aggregate traffic series, forecasts it one step ahead, scores
 | Data | Abilene traffic matrices (Internet2 NetFlow, 5-minute resolution), six consecutive weeks, 29 May to 9 July 2004 |
 | Forecasters | Weekly seasonal naive; LightGBM on lag, rolling-mean and calendar features |
 | Detectors | Robust Z-score (median and MAD from a validation week); two-sided CUSUM |
-| Events | Spike, level shift, ramp, outage; amplitude 10 to 100 per cent; duration from 15 minutes to 48 hours |
+| Events | Spike (two intervals), level shift, ramp, outage; amplitude 10 to 100 per cent; duration of level shift, ramp and outage from 15 minutes to 48 hours |
 | Metrics | RMSE, MAE, MASE; detection, detection latency, false alarms per week |
 
 Recurrent networks (LSTM, GRU), the autoencoder detector, the other two datasets and the full experimental grid belong to the second semester and are not part of this demo.
@@ -34,7 +34,7 @@ Run the tests with `pytest`.
 
 ## How to use the demo
 
-1. Pick the series (the network total or the traffic that starts at one router), the resolution and the forecaster in the sidebar.
+1. Pick the series (the traffic that starts at one router, or the network total), the resolution and the forecaster in the sidebar.
 2. Pick an event type, amplitude, duration and start time. The orange band on the plot is the injected event.
 3. Pick a detector and its threshold. Red crosses are alarms.
 4. Read the result at the top: whether the event was detected, the latency in hours, the false alarms outside the event, and the forecast error on the clean test block.

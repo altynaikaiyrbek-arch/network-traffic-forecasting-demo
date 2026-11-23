@@ -7,7 +7,7 @@ import pandas as pd
 from .data import split_blocks, steps_per
 from .detectors import cusum_alarms, merge_alarms, robust_scale, zscore_alarms, zscores
 from .forecasters import BoostedForecaster, seasonal_naive
-from .injection import inject
+from .injection import effective_duration, inject
 
 FORECASTERS = ("Seasonal naive (weekly)", "LightGBM")
 DETECTORS = ("Robust Z-score", "CUSUM")
@@ -99,7 +99,7 @@ class Pipeline:
         }
 
     def run_event(self, kind, start, amplitude, duration_hours, s=DetectorSettings()):
-        duration = max(1, round(duration_hours / self.step_hours))
+        duration = effective_duration(kind, round(duration_hours / self.step_hours))
         live, window = inject(self.series, kind, start, amplitude, duration)
         det = self.detect(live, s)
         return live, window, det, self.score_event(det, window, s)
@@ -113,7 +113,7 @@ class Pipeline:
     def batch(self, kind, amplitude, duration_hours, s=DetectorSettings(), runs=20, seed=1):
         """Random placements of one event in the test block, as in the planned experiments."""
         rng = np.random.default_rng(seed)
-        duration = max(1, round(duration_hours / self.step_hours))
+        duration = effective_duration(kind, round(duration_hours / self.step_hours))
         tol = round(s.tolerance_hours / self.step_hours)
         latest = len(self.series) - duration - tol - 1
         starts = rng.integers(self.test_start + self.steps["day"], latest, size=runs)
